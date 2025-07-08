@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OAuth2 Frontend</title>
+</head>
+<body>
+<h1>🔐 OAuth2 Client</h1>
+
+<button onclick="login()">Login (get token)</button>
+<p><strong>Token:</strong> <span id="token"></span></p>
+
+<hr>
+
+<button onclick="callApi('/user/hello')">Call User API</button>
+<button onclick="callApi('/admin/hello')">Call Admin API</button>
+<p><strong>API Response:</strong> <span id="response"></span></p>
+
+<script>
+    let accessToken = "";
+
+    function login() {
+        const clientId = "my-client";
+        const clientSecret = "secret123";
+        const creds = btoa(`${clientId}:${clientSecret}`);
+
+        fetch("http://localhost:8080/oauth2/token", {
+            method: "POST",
+            headers: {
+                "Authorization": `Basic ${creds}`,
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: "grant_type=client_credentials"
+        })
+            .then(res => res.json())
+            .then(data => {
+                accessToken = data.access_token;
+                document.getElementById("token").innerText = accessToken;
+            });
+    }
+
+    function callApi(path) {
+        fetch(`http://localhost:8081${path}`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("response").innerText = data;
+            });
+    }
+</script>
+</body>
+</html>
